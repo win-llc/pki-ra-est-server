@@ -11,6 +11,7 @@
         <module>jester-common</module>
         <module>jester-codec-bc</module>
         <module>jester-sample-war</module>
+        <module>jester-winllc-server</module>
     </modules>
     <packaging>pom</packaging>
 

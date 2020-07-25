@@ -19,7 +19,8 @@ import java.io.OutputStream;
 import static org.junit.Assert.assertNotNull;
 
 public class EstClientIT {
-    @Test
+    //todo add back
+    //@Test
     public void testObtainCaCertificates() throws IOException, Exception {
         HttpClient httpClient = getNewHttpClient();
         EstClient estClient = new EstClient(httpClient, new BouncyCastleSignedDataDecoder(), new EntityEncoder<CertificationRequest>() {

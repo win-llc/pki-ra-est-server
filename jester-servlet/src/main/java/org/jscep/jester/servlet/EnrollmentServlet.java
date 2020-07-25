@@ -33,11 +33,9 @@ public class EnrollmentServlet extends HttpServlet {
             response.setContentType(APPLICATION_PKCS7_MIME);
             response.addHeader("Content-Transfer-Encoding", "base64");
             X509Certificate certificate = est.enroll(csr);
-            Base64OutputStream bOut = new Base64OutputStream(response.getOutputStream());
-            encoder.encode(bOut, certificate);
-            bOut.flush();
-            bOut.close();
-
+            try(Base64OutputStream bOut = new Base64OutputStream(response.getOutputStream());) {
+                encoder.encode(bOut, certificate);
+            }
         } catch (IOException e) {
             response.sendError(500);
             response.getWriter().write(e.getMessage());
@@ -45,9 +43,6 @@ public class EnrollmentServlet extends HttpServlet {
 
         }
 
-        // 202
-        // Retry-After
 
-        // 400
     }
 }

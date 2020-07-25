@@ -6,3 +6,5 @@ jester-client/jester-client.iml
 jester-common/jester-common.iml
 jester-codec-bc/jester-codec-bc.iml
 jester-sample-war/jester-sample-war.iml
+/jester-winllc-server/jester-winllc-server.iml
+build

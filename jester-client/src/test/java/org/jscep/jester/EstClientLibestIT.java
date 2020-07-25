@@ -34,7 +34,7 @@ import java.util.Arrays;
  * See http://ec2-54-204-91-178.compute-1.amazonaws.com/
  */
 public class EstClientLibestIT {
-    @Test
+    //@Test
     public void testObtainCaCertificates() throws IOException, Exception {
         EstClient estClient = new EstClient(httpClient(), new BouncyCastleSignedDataDecoder(), new EntityEncoder<CertificationRequest>() {
             @Override
