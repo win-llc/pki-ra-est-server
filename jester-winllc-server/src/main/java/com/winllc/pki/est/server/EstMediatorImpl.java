@@ -10,10 +10,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 public class EstMediatorImpl implements EstMediator {
@@ -25,7 +30,21 @@ public class EstMediatorImpl implements EstMediator {
     public X509Certificate[] getCaCertificates() {
         try {
             Certificate[] trustChain = certAuthorityConnection.getTrustChain();
-            return (X509Certificate[]) trustChain;
+            List<X509Certificate> certs = Stream.of(trustChain)
+                    .map(c -> CertUtil.toPEM(c))
+                    .map(p -> {
+                        try {
+                            return CertUtil.base64ToCert(p);
+                        } catch (CertificateException e) {
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        return null;
+                    })
+                    .filter(c -> c != null)
+                    .collect(Collectors.toList());
+            return certs.toArray(new X509Certificate[0]);
         } catch (Exception e) {
             e.printStackTrace();
         }

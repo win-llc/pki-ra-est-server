@@ -15,7 +15,7 @@ import java.io.IOException;
 import static com.winllc.pki.est.server.Constants.APPLICATION_CSRATTRS;
 
 @Controller
-@RequestMapping("/est")
+@RequestMapping("/.well-known/est")
 public class CsrAttributesController {
 
     @Autowired

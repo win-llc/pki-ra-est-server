@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Controller
-@RequestMapping("/est")
+@RequestMapping("/.well-known/est")
 public class KeyGenerationController {
 
     @Autowired

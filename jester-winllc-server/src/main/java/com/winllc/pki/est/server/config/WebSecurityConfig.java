@@ -29,8 +29,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/est/**")
-                .authenticated()
+                .antMatchers("/.well-known/est/simpleenroll", "/.well-known/est/simplereenroll").authenticated()
+                .antMatchers("/.well-known/est/**").permitAll()
                 .and()
                 .httpBasic()
                 .authenticationEntryPoint(authEntryPoint);

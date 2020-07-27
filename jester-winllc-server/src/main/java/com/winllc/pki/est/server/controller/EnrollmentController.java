@@ -4,6 +4,10 @@ import com.winllc.pki.est.server.EstMediatorImpl;
 import com.winllc.ra.client.CertAuthorityConnection;
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.codec.binary.Base64OutputStream;
+import org.apache.commons.io.IOUtils;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.mime.smime.SMIMESignedWriter;
 import org.jscep.jester.CertificationRequest;
 import org.jscep.jester.io.EntityDecoder;
 import org.jscep.jester.io.EntityEncoder;
@@ -16,14 +20,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 
 import static com.winllc.pki.est.server.Constants.APPLICATION_PKCS7_MIME;
 
 
 @Controller
-@RequestMapping("/est")
+@RequestMapping("/.well-known/est")
 public class EnrollmentController {
 
     @Autowired
@@ -43,7 +49,7 @@ public class EnrollmentController {
     }
 
     @PostMapping("/simplereenroll")
-    public void doReEnroll(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException{
+    public void doReEnroll(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
         enroll(request, response, authentication);
     }
 
@@ -54,9 +60,11 @@ public class EnrollmentController {
             response.setContentType(APPLICATION_PKCS7_MIME);
             response.addHeader("Content-Transfer-Encoding", "base64");
             X509Certificate certificate = est.enroll(csr, authentication.getName());
+
             try (Base64OutputStream bOut = new Base64OutputStream(response.getOutputStream());) {
                 encoder.encode(bOut, certificate);
             }
+
         } catch (IOException e) {
             response.sendError(500);
             response.getWriter().write(e.getMessage());

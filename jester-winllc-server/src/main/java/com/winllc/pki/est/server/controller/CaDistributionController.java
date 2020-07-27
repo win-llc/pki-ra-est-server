@@ -17,7 +17,7 @@ import java.security.cert.X509Certificate;
 import static com.winllc.pki.est.server.Constants.APPLICATION_PKCS7_MIME;
 
 @Controller
-@RequestMapping("/est")
+@RequestMapping("/.well-known/est")
 public class CaDistributionController {
 
     @Autowired
