@@ -39,7 +39,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         if(valid){
             System.out.println("Account authenticated");
             return new UsernamePasswordAuthenticationToken
-                    (username, password, new ArrayList<GrantedAuthority>());
+                    (username, password, new ArrayList<>());
         }else{
             throw new
                     BadCredentialsException("External system authentication failed");

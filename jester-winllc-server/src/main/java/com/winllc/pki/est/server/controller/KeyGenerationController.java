@@ -1,9 +1,12 @@
 package com.winllc.pki.est.server.controller;
 
+import com.winllc.acme.common.util.CertUtil;
+import org.apache.commons.codec.binary.Base64OutputStream;
 import org.jscep.jester.CertificationRequest;
 import org.jscep.jester.EstMediator;
 import org.jscep.jester.io.EntityDecoder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,6 +14,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.security.KeyPair;
+import java.security.cert.X509Certificate;
+
+import static com.winllc.pki.est.server.Constants.APPLICATION_PKCS7_MIME;
 
 @Controller
 @RequestMapping("/.well-known/est")
@@ -22,12 +29,26 @@ public class KeyGenerationController {
     private EntityDecoder<CertificationRequest> decoder;
 
     @PostMapping("/serverkeygen")
-    public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void doPost(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
         CertificationRequest csr = decoder.decode(request.getInputStream());
 
         //todo
-
         response.getWriter().write(csr.toString());
+
+        try {
+            CertUtil.generateRSAKeyPair();
+
+            response.setContentType(APPLICATION_PKCS7_MIME);
+            response.addHeader("Content-Transfer-Encoding", "base64");
+            X509Certificate certificate = est.enroll(csr, authentication.getName());
+
+
+        } catch (Exception e) {
+            response.sendError(500);
+            response.getWriter().write(e.getMessage());
+            response.getWriter().close();
+
+        }
     }
 
 }

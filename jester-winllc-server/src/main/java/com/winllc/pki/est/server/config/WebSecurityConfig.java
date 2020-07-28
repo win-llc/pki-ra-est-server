@@ -33,7 +33,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/.well-known/est/**").permitAll()
                 .and()
                 .httpBasic()
-                .authenticationEntryPoint(authEntryPoint);
+                .authenticationEntryPoint(authEntryPoint)
+                .and().x509()
+        //todo allow x509 for re-enroll
+        ;
     }
 
     @Override
