@@ -2,7 +2,9 @@ package com.winllc.pki.est.server;
 
 import com.winllc.acme.common.model.acme.Identifier;
 import com.winllc.acme.common.util.CertUtil;
-import com.winllc.ra.client.CertAuthorityConnection;
+import com.winllc.ra.client.ApiClient;
+import com.winllc.ra.client.api.CertAuthorityConnectionServiceApi;
+import com.winllc.ra.client.model.RACertificateIssueRequest;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.jscep.jester.CertificationRequest;
 import org.jscep.jester.EstMediator;
@@ -24,12 +26,14 @@ import java.util.stream.Stream;
 public class EstMediatorImpl implements EstMediator {
 
     @Autowired
-    private CertAuthorityConnection certAuthorityConnection;
+    private ApiClient apiClient;
 
     @Override
     public X509Certificate[] getCaCertificates() {
         try {
-            Certificate[] trustChain = certAuthorityConnection.getTrustChain();
+            CertAuthorityConnectionServiceApi connectionServiceApi = new CertAuthorityConnectionServiceApi(apiClient);
+            String trustChainResponse = connectionServiceApi.getTrustChain("dogtag");
+            Certificate[] trustChain = CertUtil.trustChainStringToCertArray(trustChainResponse);
             List<X509Certificate> certs = Stream.of(trustChain)
                     .map(c -> CertUtil.toPEM(c))
                     .map(p -> {
@@ -72,10 +76,20 @@ public class EstMediatorImpl implements EstMediator {
         identifier.setValue("est.winllc-dev.com");
         identifierSet.add(identifier);
 
+
         try {
             PKCS10CertificationRequest pkcs10CertificationRequest = new PKCS10CertificationRequest(csr.getBytes());
 
-            X509Certificate certificate = certAuthorityConnection.issueCertificate(identifierSet, accountId, pkcs10CertificationRequest);
+            String dnsNames = identifierSet.stream().map(Identifier::getValue).collect(Collectors.joining(","));
+            CertAuthorityConnectionServiceApi connectionServiceApi = new CertAuthorityConnectionServiceApi(apiClient);
+            RACertificateIssueRequest raCertificateRequest = new RACertificateIssueRequest();
+            raCertificateRequest.accountKid(accountId);
+            raCertificateRequest.certAuthorityName("dogtag");
+            raCertificateRequest.dnsNames(dnsNames);
+            raCertificateRequest.csr(CertUtil.certificationRequestToPEM(pkcs10CertificationRequest));
+
+            String base64Cert = connectionServiceApi.issueCertificate(raCertificateRequest);
+            X509Certificate certificate = CertUtil.base64ToCert(base64Cert);
 
             System.out.println("Issued cert");
             System.out.println(CertUtil.toPEM(certificate));

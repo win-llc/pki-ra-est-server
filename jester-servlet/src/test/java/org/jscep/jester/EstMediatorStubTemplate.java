@@ -17,4 +17,9 @@ public class EstMediatorStubTemplate implements EstMediator {
     public X509Certificate enroll(CertificationRequest csr) {
         return null;
     }
+
+    @Override
+    public X509Certificate enroll(CertificationRequest csr, String accountId) {
+        return null;
+    }
 }

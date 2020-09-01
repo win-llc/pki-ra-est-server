@@ -1,7 +1,6 @@
 package com.winllc.pki.est.server.controller;
 
 import com.winllc.pki.est.server.EstMediatorImpl;
-import com.winllc.ra.client.CertAuthorityConnection;
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.codec.binary.Base64OutputStream;
 import org.apache.commons.io.IOUtils;

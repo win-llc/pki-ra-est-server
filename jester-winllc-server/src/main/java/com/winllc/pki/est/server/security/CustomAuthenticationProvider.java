@@ -1,7 +1,8 @@
 package com.winllc.pki.est.server.security;
 
-import com.winllc.ra.client.AccountProviderConnection;
-import com.winllc.ra.client.CertAuthorityConnection;
+import com.winllc.ra.client.ApiClient;
+import com.winllc.ra.client.api.ValidationServiceApi;
+import com.winllc.ra.client.model.RAAccountValidationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -20,7 +21,7 @@ import java.util.Collections;
 public class CustomAuthenticationProvider implements AuthenticationProvider {
 
     @Autowired
-    private AccountProviderConnection accountProviderConnection;
+    private ApiClient apiClient;
 
     @Override
     public Authentication authenticate(Authentication auth)
@@ -31,7 +32,11 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
         boolean valid = false;
         try {
-            valid = accountProviderConnection.validateAccountCredentials(username, password);
+            ValidationServiceApi validationServiceApi = new ValidationServiceApi(apiClient);
+            RAAccountValidationResponse raAccountValidationResponse
+                    = validationServiceApi.validateAccountCredentials(username, password);
+
+            valid = raAccountValidationResponse.isValid();
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -40,7 +40,7 @@ public class KeyGenerationController {
 
             response.setContentType(APPLICATION_PKCS7_MIME);
             response.addHeader("Content-Transfer-Encoding", "base64");
-            X509Certificate certificate = est.enroll(csr, authentication.getName());
+            //X509Certificate certificate = est.enroll(csr, authentication.getName());
 
 
         } catch (Exception e) {

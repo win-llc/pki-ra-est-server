@@ -42,4 +42,9 @@ public class SampleEstMediator implements EstMediator {
     public X509Certificate enroll(CertificationRequest csr) {
         return getCaCertificates()[0];
     }
+
+    @Override
+    public X509Certificate enroll(CertificationRequest csr, String accountId) {
+        return null;
+    }
 }
