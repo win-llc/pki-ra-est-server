@@ -5,6 +5,8 @@ import com.winllc.acme.common.util.CertUtil;
 import com.winllc.ra.client.ApiClient;
 import com.winllc.ra.client.api.CertAuthorityConnectionServiceApi;
 import com.winllc.ra.client.model.RACertificateIssueRequest;
+import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
+import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.jscep.jester.CertificationRequest;
 import org.jscep.jester.EstMediator;
@@ -70,15 +72,18 @@ public class EstMediatorImpl implements EstMediator {
 
     @Override
     public X509Certificate enroll(CertificationRequest csr, String accountId) {
-        Set<Identifier> identifierSet = new HashSet<>();
-        Identifier identifier = new Identifier();
-        identifier.setType("dns");
-        identifier.setValue("est.winllc-dev.com");
-        identifierSet.add(identifier);
-
 
         try {
             PKCS10CertificationRequest pkcs10CertificationRequest = new PKCS10CertificationRequest(csr.getBytes());
+
+            RDN cn = pkcs10CertificationRequest.getSubject().getRDNs()[0];
+            AttributeTypeAndValue first = cn.getFirst();
+
+            Set<Identifier> identifierSet = new HashSet<>();
+            Identifier identifier = new Identifier();
+            identifier.setType("dns");
+            identifier.setValue(first.getValue().toString());
+            identifierSet.add(identifier);
 
             String dnsNames = identifierSet.stream().map(Identifier::getValue).collect(Collectors.joining(","));
             CertAuthorityConnectionServiceApi connectionServiceApi = new CertAuthorityConnectionServiceApi(apiClient);
