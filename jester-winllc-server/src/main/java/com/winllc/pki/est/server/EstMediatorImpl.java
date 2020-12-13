@@ -4,7 +4,11 @@ import com.winllc.acme.common.model.acme.Identifier;
 import com.winllc.acme.common.util.CertUtil;
 import com.winllc.ra.client.ApiClient;
 import com.winllc.ra.client.api.CertAuthorityConnectionServiceApi;
+import com.winllc.ra.client.api.EstServerManagementServiceApi;
+import com.winllc.ra.client.model.EstServerProperties;
 import com.winllc.ra.client.model.RACertificateIssueRequest;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
@@ -18,41 +22,48 @@ import java.io.IOException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Component
 public class EstMediatorImpl implements EstMediator {
 
-    @Autowired
-    private ApiClient apiClient;
+    private static final Logger log = LogManager.getLogger(EstMediatorImpl.class);
+
+    private final ApiClient apiClient;
+
+    @Value("${win-ra.ca-connection-name}")
+    private String connectionName;
+
+    public EstMediatorImpl(ApiClient apiClient) {
+        this.apiClient = apiClient;
+    }
 
     @Override
     public X509Certificate[] getCaCertificates() {
         try {
+            EstServerManagementServiceApi estServerManagementServiceApi = new EstServerManagementServiceApi(apiClient);
+            EstServerProperties serverProperties = estServerManagementServiceApi.getProperties("default");
+
             CertAuthorityConnectionServiceApi connectionServiceApi = new CertAuthorityConnectionServiceApi(apiClient);
-            String trustChainResponse = connectionServiceApi.getTrustChain("dogtag");
+            String trustChainResponse = connectionServiceApi.getTrustChain(serverProperties.getCaConnectionName());
             Certificate[] trustChain = CertUtil.trustChainStringToCertArray(trustChainResponse);
             List<X509Certificate> certs = Stream.of(trustChain)
                     .map(c -> CertUtil.toPEM(c))
                     .map(p -> {
                         try {
                             return CertUtil.base64ToCert(p);
-                        } catch (CertificateException e) {
-                            e.printStackTrace();
-                        } catch (IOException e) {
-                            e.printStackTrace();
+                        } catch (CertificateException | IOException e) {
+                            log.error("Could not process cert", e);
                         }
                         return null;
                     })
-                    .filter(c -> c != null)
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toList());
             return certs.toArray(new X509Certificate[0]);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Could not get CA Certs", e);
         }
         return new X509Certificate[0];
     }
@@ -76,7 +87,11 @@ public class EstMediatorImpl implements EstMediator {
         try {
             PKCS10CertificationRequest pkcs10CertificationRequest = new PKCS10CertificationRequest(csr.getBytes());
 
-            RDN cn = pkcs10CertificationRequest.getSubject().getRDNs()[0];
+            Optional<RDN> cnOptional = Stream.of(pkcs10CertificationRequest.getSubject().getRDNs())
+                    .filter(rdn -> rdn.getFirst().getType().getId().equals("2.5.4.3"))
+                    .findFirst();
+
+            RDN cn = cnOptional.get();
             AttributeTypeAndValue first = cn.getFirst();
 
             Set<Identifier> identifierSet = new HashSet<>();
@@ -89,7 +104,7 @@ public class EstMediatorImpl implements EstMediator {
             CertAuthorityConnectionServiceApi connectionServiceApi = new CertAuthorityConnectionServiceApi(apiClient);
             RACertificateIssueRequest raCertificateRequest = new RACertificateIssueRequest();
             raCertificateRequest.accountKid(accountId);
-            raCertificateRequest.certAuthorityName("dogtag");
+            raCertificateRequest.certAuthorityName(connectionName);
             raCertificateRequest.dnsNames(dnsNames);
             raCertificateRequest.csr(CertUtil.certificationRequestToPEM(pkcs10CertificationRequest));
 
@@ -101,7 +116,7 @@ public class EstMediatorImpl implements EstMediator {
 
             return certificate;
         }catch (Exception e){
-            e.printStackTrace();
+            log.error("Could not ");
         }
 
         return null;

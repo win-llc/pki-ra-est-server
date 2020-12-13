@@ -1,6 +1,7 @@
 package com.winllc.pki.est.server.controller;
 
 import com.winllc.pki.est.server.EstMediatorImpl;
+import com.winllc.pki.est.server.security.X509AuthenticationToken;
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.codec.binary.Base64OutputStream;
 import org.apache.commons.io.IOUtils;
@@ -31,34 +32,48 @@ import static com.winllc.pki.est.server.Constants.APPLICATION_PKCS7_MIME;
 @RequestMapping("/.well-known/est")
 public class EnrollmentController {
 
-    @Autowired
-    @Qualifier("requestDecoder")
-    private EntityDecoder<CertificationRequest> decoder;
-    @Autowired
-    @Qualifier("dataEncoder")
-    private EntityEncoder<X509Certificate> encoder;
-    @Autowired
-    private EstMediatorImpl est;
+    private final EntityDecoder<CertificationRequest> decoder;
+    private final EntityEncoder<X509Certificate> encoder;
+    private final EstMediatorImpl est;
+
+    public EnrollmentController(@Qualifier("requestDecoder") EntityDecoder<CertificationRequest> decoder,
+                                @Qualifier("dataEncoder") EntityEncoder<X509Certificate> encoder,
+                                EstMediatorImpl est) {
+        this.decoder = decoder;
+        this.encoder = encoder;
+        this.est = est;
+    }
 
 
     //todo protect with spring security
     @PostMapping("/simpleenroll")
     public void doPost(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
-        enroll(request, response, authentication);
+
+        enroll(request, response, (String) authentication.getPrincipal());
     }
 
+    //Section 4.2.2
+    //   The request Subject field
+    //   and SubjectAltName extension MUST be identical to the corresponding
+    //   fields in the certificate being renewed/rekeyed.  The
+    //   ChangeSubjectName attribute, as defined in [RFC6402], MAY be included
+    //   in the CSR to request that these fields be changed in the new
+    //   certificate.
     @PostMapping("/simplereenroll")
     public void doReEnroll(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
-        enroll(request, response, authentication);
+        //todo
+        X509AuthenticationToken token = (X509AuthenticationToken) authentication.getCredentials();
+
+        enroll(request, response, token.getAccountId());
     }
 
-    private void enroll(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
+    private void enroll(HttpServletRequest request, HttpServletResponse response, String accountId) throws IOException {
         CertificationRequest csr = decoder.decode(new Base64InputStream(request.getInputStream()));
 
         try {
             response.setContentType(APPLICATION_PKCS7_MIME);
             response.addHeader("Content-Transfer-Encoding", "base64");
-            X509Certificate certificate = est.enroll(csr, authentication.getName());
+            X509Certificate certificate = est.enroll(csr, accountId);
 
             try (Base64OutputStream bOut = new Base64OutputStream(response.getOutputStream());) {
                 encoder.encode(bOut, certificate);

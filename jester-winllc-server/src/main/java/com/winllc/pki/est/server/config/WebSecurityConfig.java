@@ -1,6 +1,9 @@
 package com.winllc.pki.est.server.config;
 
 import com.winllc.pki.est.server.security.CustomAuthenticationProvider;
+import com.winllc.pki.est.server.security.CustomX509AuthFilter;
+import com.winllc.pki.est.server.security.ServerDetailsService;
+import com.winllc.ra.client.ApiClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,22 +11,28 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.AuthenticationEntryPoint;
 
-@Configuration
-@EnableWebSecurity
+//@Configuration
+//@EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private AuthenticationEntryPoint authEntryPoint;
     @Autowired
     private CustomAuthenticationProvider customAuthenticationProvider;
+    @Autowired
+    private ServerDetailsService serverDetailsService;
+    @Autowired
+    private ApiClient apiClient;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -35,26 +44,37 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .httpBasic()
                 .authenticationEntryPoint(authEntryPoint)
                 .and().x509()
-        //todo allow x509 for re-enroll
+                .subjectPrincipalRegex("CN=(.*?)(?:,|$)")
+                .x509AuthenticationFilter(customX509AuthFilter())
+        .userDetailsService(serverDetailsService)
         ;
     }
+
+    //@Bean
+    public CustomX509AuthFilter customX509AuthFilter() throws Exception {
+        CustomX509AuthFilter filter = new CustomX509AuthFilter(apiClient);
+        filter.setAuthenticationManager(authenticationManagerBean());
+        return filter;
+    }
+
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.authenticationProvider(customAuthenticationProvider);
     }
 
-    @Bean
+    //@Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
+    //@Bean
     @Override
     public UserDetailsService userDetailsService() {
+        //todo replace with details service that checks if server entry is tied to a valid account on the RA
         UserDetails user =
                 User.withDefaultPasswordEncoder()
-                        .username("user")
+                        .username("CN=est-test.winllc-dev.com,OU=Servers,DC=winllc-dev,DC=com")
                         .password("password")
                         .roles("USER")
                         .build();

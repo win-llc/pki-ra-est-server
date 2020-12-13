@@ -1,8 +1,11 @@
 package com.winllc.pki.est.server.security;
 
+import com.winllc.pki.est.server.EstMediatorImpl;
 import com.winllc.ra.client.ApiClient;
 import com.winllc.ra.client.api.ValidationServiceApi;
 import com.winllc.ra.client.model.RAAccountValidationResponse;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -20,15 +23,19 @@ import java.util.Collections;
 @Component
 public class CustomAuthenticationProvider implements AuthenticationProvider {
 
-    @Autowired
-    private ApiClient apiClient;
+    private static final Logger log = LogManager.getLogger(CustomAuthenticationProvider.class);
+
+    private final ApiClient apiClient;
+
+    public CustomAuthenticationProvider(ApiClient apiClient) {
+        this.apiClient = apiClient;
+    }
 
     @Override
     public Authentication authenticate(Authentication auth)
             throws AuthenticationException {
         String username = auth.getName();
-        String password = auth.getCredentials()
-                .toString();
+        String password = auth.getCredentials().toString();
 
         boolean valid = false;
         try {
@@ -38,11 +45,11 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
             valid = raAccountValidationResponse.isValid();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Could not validate client", e);
         }
 
         if(valid){
-            System.out.println("Account authenticated");
+            log.info("Account authenticated: "+username);
             return new UsernamePasswordAuthenticationToken
                     (username, password, new ArrayList<>());
         }else{
