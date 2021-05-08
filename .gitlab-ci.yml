@@ -23,7 +23,7 @@ maven-build:
 package:
   stage: package
   script:
-    - docker build -t registry.gitlab.winllc-dev.com/root/winllc-jester .
+    - docker build -t registry.gitlab.winllc-dev.com/root/winllc-jester ./jester-winllc-server
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.winllc-dev.com
     - docker push registry.gitlab.winllc-dev.com/root/winllc-jester
 
@@ -41,4 +41,4 @@ deploy_staging:
     name: staging
     url: http://winra.winllc-dev.com
   only:
-    - master
+    - winllc
