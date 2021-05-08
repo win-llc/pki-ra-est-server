@@ -33,8 +33,8 @@ public class EstMediatorImpl implements EstMediator {
 
     private final ApiClient apiClient;
 
-    @Value("${win-ra.ca-connection-name}")
-    private String connectionName;
+    @Value("${win-ra.properties-config-name}")
+    private String propertiesConfigName;
 
     public EstMediatorImpl(ApiClient apiClient) {
         this.apiClient = apiClient;
@@ -102,9 +102,13 @@ public class EstMediatorImpl implements EstMediator {
 
             String dnsNames = identifierSet.stream().map(Identifier::getValue).collect(Collectors.joining(","));
             CertAuthorityConnectionServiceApi connectionServiceApi = new CertAuthorityConnectionServiceApi(apiClient);
+
+            EstServerManagementServiceApi estServerManagementServiceApi = new EstServerManagementServiceApi(apiClient);
+            EstServerProperties properties = estServerManagementServiceApi.getProperties(propertiesConfigName);
+
             RACertificateIssueRequest raCertificateRequest = new RACertificateIssueRequest();
             raCertificateRequest.accountKid(accountId);
-            raCertificateRequest.certAuthorityName(connectionName);
+            raCertificateRequest.certAuthorityName(properties.getCaConnectionName());
             raCertificateRequest.dnsNames(dnsNames);
             raCertificateRequest.csr(CertUtil.certificationRequestToPEM(pkcs10CertificationRequest));
 
