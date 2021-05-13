@@ -42,3 +42,4 @@ deploy_staging:
     url: http://winra.winllc-dev.com
   only:
     - winllc
+    - master
