@@ -7,6 +7,8 @@ import org.jscep.jester.io.BouncyCastleSignedDataDecoder;
 import org.jscep.jester.io.BouncyCastleSignedDataEncoder;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
+import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -14,7 +16,12 @@ import org.springframework.web.filter.ShallowEtagHeaderFilter;
 
 import java.util.Arrays;
 
-@SpringBootApplication
+@SpringBootApplication(
+        exclude = {
+                MongoAutoConfiguration.class,
+                MongoDataAutoConfiguration.class
+        }
+)
 @ComponentScan("com.winllc.pki.est.server")
 public class AppConfig {
 
