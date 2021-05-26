@@ -120,7 +120,7 @@ public class EstMediatorImpl implements EstMediator {
 
             return certificate;
         }catch (Exception e){
-            log.error("Could not ");
+            log.error("Could not process", e);
         }
 
         return null;
