@@ -40,6 +40,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/.well-known/est/simpleenroll", "/.well-known/est/simplereenroll").authenticated()
                 .antMatchers("/.well-known/est/**").permitAll()
+                .antMatchers("/actuator/**").permitAll()
                 .and()
                 .httpBasic()
                 .authenticationEntryPoint(authEntryPoint)
