@@ -7,8 +7,10 @@ import org.apache.commons.codec.binary.Base64OutputStream;
 import org.apache.commons.io.IOUtils;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.mime.smime.SMIMESignedWriter;
 import org.jscep.jester.CertificationRequest;
+import org.jscep.jester.io.BouncyCastleSignedDataEncoder;
 import org.jscep.jester.io.EntityDecoder;
 import org.jscep.jester.io.EntityEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,7 +78,8 @@ public class EnrollmentController {
             X509Certificate certificate = est.enroll(csr, accountId);
 
             try (Base64OutputStream bOut = new Base64OutputStream(response.getOutputStream());) {
-                encoder.encode(bOut, certificate);
+                new BouncyCastleSignedDataEncoder(new CMSSignedDataGenerator()).encode(bOut, certificate);
+                //encoder.encode(bOut, certificate);
             }
 
         } catch (IOException e) {
