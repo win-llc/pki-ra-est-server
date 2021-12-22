@@ -1,12 +1,11 @@
 package com.winllc.pki.est.server.security;
 
-import com.winllc.ra.client.ApiClient;
-import com.winllc.ra.client.ApiException;
-import com.winllc.ra.client.api.ValidationServiceApi;
-import com.winllc.ra.client.model.CertificateValidationForm;
-import com.winllc.ra.client.model.RAAccountValidationResponse;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AccountStatusException;
+
+import com.winllc.acme.common.client.ApiClient;
+import com.winllc.acme.common.client.ApiException;
+import com.winllc.acme.common.client.api.ValidationServiceApi;
+import com.winllc.acme.common.client.model.CertificateValidationForm;
+import com.winllc.acme.common.client.model.RAAccountValidationResponse;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
@@ -20,7 +19,7 @@ import java.security.cert.X509Certificate;
 
 public class CustomX509AuthFilter extends X509AuthenticationFilter {
 
-    private ApiClient apiClient;
+    private final ApiClient apiClient;
 
     public CustomX509AuthFilter(ApiClient apiClient) {
         super();

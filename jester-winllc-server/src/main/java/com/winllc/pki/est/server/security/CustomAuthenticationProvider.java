@@ -1,9 +1,10 @@
 package com.winllc.pki.est.server.security;
 
+import com.winllc.acme.common.client.ApiClient;
+import com.winllc.acme.common.client.api.ValidationServiceApi;
+import com.winllc.acme.common.client.model.RAAccountValidationResponse;
 import com.winllc.pki.est.server.EstMediatorImpl;
-import com.winllc.ra.client.ApiClient;
-import com.winllc.ra.client.api.ValidationServiceApi;
-import com.winllc.ra.client.model.RAAccountValidationResponse;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;

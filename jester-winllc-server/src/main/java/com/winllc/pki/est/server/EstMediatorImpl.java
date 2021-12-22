@@ -1,12 +1,12 @@
 package com.winllc.pki.est.server;
 
+import com.winllc.acme.common.client.ApiClient;
+import com.winllc.acme.common.client.api.CertAuthorityConnectionServiceApi;
+import com.winllc.acme.common.client.api.EstServerManagementServiceApi;
+import com.winllc.acme.common.client.model.EstServerProperties;
+import com.winllc.acme.common.client.model.RACertificateIssueRequest;
 import com.winllc.acme.common.model.acme.Identifier;
 import com.winllc.acme.common.util.CertUtil;
-import com.winllc.ra.client.ApiClient;
-import com.winllc.ra.client.api.CertAuthorityConnectionServiceApi;
-import com.winllc.ra.client.api.EstServerManagementServiceApi;
-import com.winllc.ra.client.model.EstServerProperties;
-import com.winllc.ra.client.model.RACertificateIssueRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
@@ -14,7 +14,6 @@ import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.jscep.jester.CertificationRequest;
 import org.jscep.jester.EstMediator;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 

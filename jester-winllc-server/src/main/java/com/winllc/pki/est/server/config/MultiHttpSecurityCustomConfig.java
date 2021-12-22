@@ -1,9 +1,9 @@
 package com.winllc.pki.est.server.config;
 
+import com.winllc.acme.common.client.ApiClient;
 import com.winllc.pki.est.server.security.CustomAuthenticationProvider;
 import com.winllc.pki.est.server.security.CustomX509AuthFilter;
 import com.winllc.pki.est.server.security.ServerDetailsService;
-import com.winllc.ra.client.ApiClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
