@@ -1,0 +1,13 @@
+pluginManagement {
+    plugins {
+        id 'org.springframework.boot' version "2.6.11"
+        id 'io.spring.dependency-management' version '1.0.13.RELEASE'
+    }
+}
+
+rootProject.name = 'winllc-ra-est-server'
+
+include(":pki-ra-common")
+if (new File("../pki-ra-common").with{exists() && isDirectory()}) {
+    project(":pki-ra-common").projectDir = file("../pki-ra-common")
+}

@@ -1,0 +1,45 @@
+image: docker:latest
+
+services:
+  - docker:20:10:16-dind
+
+variables:
+  # Tell docker CLI how to talk to Docker daemon; see
+  # https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#use-docker-in-docker-executor
+  #DOCKER_HOST: tcp://docker:2375/
+  # Use the overlayfs driver for improved performance:
+  #DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+  SPRING_PROFILES_ACTIVE: ci
+
+stages:
+  - test
+  - build
+  - package
+
+test:
+  image: openjdk:14
+  stage: test
+  script:
+    - ./gradlew test -Dspring.profiles.active=ci
+
+build:
+  image: openjdk:14
+  stage: build
+  script:
+    - ./gradlew bootJar
+  artifacts:
+    paths:
+      - build/libs/pki-ra-est-server-1.0-SNAPSHOT.jar
+    expire_in: 1 week
+
+package:
+  stage: package
+
+  before_script:
+    - docker info
+    - echo "$CI_BUILD_TOKEN" | docker login $REGISTRY_FQDN --username gitlab-deploy-token --password-stdin
+
+  script:
+    - docker build -t $REGISTRY_FQDN/win-ra/winllc-ra-est-server:latest .
+    - docker push $REGISTRY_FQDN/win-ra/winllc-ra-est-server:latest
