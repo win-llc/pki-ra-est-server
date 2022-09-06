@@ -30,7 +30,7 @@ build:
     - ./gradlew bootJar
   artifacts:
     paths:
-      - build/libs/pki-ra-est-server-1.0-SNAPSHOT.jar
+      - build/libs/winllc-ra-est-server-1.0-SNAPSHOT.jar
     expire_in: 1 week
 
 package:
